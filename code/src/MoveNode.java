@@ -1,20 +1,33 @@
 import java.util.ArrayList;
 
 public class MoveNode extends Node {
+	
+	ExpressionNode expressionNode = null;
 
-	public MoveNode() {
-		// TODO Auto-generated constructor stub
+	public MoveNode() {}
+
+	public MoveNode(ExpressionNode expressionNode) {
+		this.expressionNode = expressionNode;
 	}
 
 	@Override
 	public void execute(Robot robot) {
-		robot.move();
+		
+		int numMoves = 1;
+		
+		if (expressionNode != null) {
+			numMoves = expressionNode.getValue(robot);
+		}
+		
+		for (int i=0; i<numMoves; i++) {			
+			robot.move();
+		}
 	}
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return "move;";
+		String suffix = (expressionNode != null) ? "(" + expressionNode + ")" : "";
+		return "move" + suffix + ";";
 	}
 
 }

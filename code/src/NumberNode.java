@@ -1,5 +1,5 @@
 
-public class NumberNode extends Node implements RobotProgramNode {
+public class NumberNode extends ExpressionNode implements RobotProgramNode {
 	
 	int value;
 	
@@ -12,7 +12,7 @@ public class NumberNode extends Node implements RobotProgramNode {
 		// Do nothing
 	}
 	
-	public int getValue() {
+	public int getValue(Robot robot) {
 		return value;
 	}
 

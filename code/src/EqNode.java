@@ -12,7 +12,7 @@ public class EqNode extends ConditionNode implements RobotProgramNode {
 
 	@Override
 	public boolean evaluate(Robot robot) {
-		return (sensorNode.getValue(robot) == numberNode.getValue());
+		return (sensorNode.getValue(robot) == numberNode.getValue(robot));
 	}
 
 }

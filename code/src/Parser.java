@@ -81,6 +81,7 @@ public class Parser {
 	static Pattern CLOSEPAREN = Pattern.compile("\\)");
 	static Pattern OPENBRACE = Pattern.compile("\\{");
 	static Pattern CLOSEBRACE = Pattern.compile("\\}");
+	static Pattern SENSORPAT = Pattern.compile("fuelLeft|oppLR|oppFB|numBarrels|barrelLR|barrelFB|wallDist");
 
 	/**
 	 * PROG ::= STMT+
@@ -129,21 +130,39 @@ public class Parser {
 	}
 	
 	/**
-	 * ACT  ::= move | turnL | turnR | turnAround | shieldOn |
+	 * ACT  ::= move [ ( EXP ) ] | turnL | turnR | turnAround | shieldOn |
      *    shieldOff | takeFuel | wait
 	 */
 	static RobotProgramNode parseAction(Scanner s) {
 		
 		RobotProgramNode node = null;
 		
-		if (checkFor("move", s)) node = new MoveNode();
+		if (checkFor("move", s)) {
+			// Optional argument
+			if (s.hasNext(OPENPAREN)) {
+				require(OPENPAREN, "Move: No (", s);
+				node = new MoveNode(parseExpression(s));
+				require(CLOSEPAREN, "Move: No )", s);
+			} else {				
+				node = new MoveNode();
+			}
+		}
 		else if (checkFor("turnL", s)) node = new TurnLNode();
 		else if (checkFor("turnR", s)) node = new TurnRNode();
 		else if (checkFor("turnAround", s)) node = new TurnAroundNode();
 		else if (checkFor("shieldOn", s)) node = new ShieldOnNode();
 		else if (checkFor("shieldOff", s)) node = new ShieldOffNode();
 		else if (checkFor("takeFuel", s)) node = new TakeFuelNode();
-		else if (checkFor("wait", s)) node = new WaitNode();
+		else if (checkFor("wait", s)) {
+			// Optional argument
+			if (s.hasNext(OPENPAREN)) {
+				require(OPENPAREN, "Wait: No (", s);
+				node = new WaitNode(parseExpression(s));
+				require(CLOSEPAREN, "Wait: No )", s);
+			} else {				
+				node = new WaitNode();
+			}
+		}
 		
 		if (node != null) {
 			require(";", "Missing ';'", s);
@@ -246,6 +265,17 @@ public class Parser {
 	static NumberNode parseNumber(Scanner s) {
 		if (s.hasNext(NUMPAT)) return new NumberNode(Integer.parseInt(s.next(NUMPAT)));
 		fail("Not a number", s);
+		return null;
+	}
+	
+	/**
+	 * EXP  ::= NUM | SEN | OP ( EXP, EXP )
+	 */
+	static ExpressionNode parseExpression(Scanner s) {
+		if (s.hasNext(NUMPAT)) return parseNumber(s);
+		if (s.hasNext(SENSORPAT)) return parseSensor(s);
+		
+		fail("Expression is not a number or sensor", s);
 		return null;
 	}
 	
