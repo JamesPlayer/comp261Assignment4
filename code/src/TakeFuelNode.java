@@ -8,13 +8,11 @@ public class TakeFuelNode extends Node {
 
 	@Override
 	public void execute(Robot robot) {
-		// TODO Auto-generated method stub
-		
+		robot.takeFuel();
 	}
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return "take fuel;";
 	}
 

@@ -10,8 +10,9 @@ public class LoopNode extends Node {
 
 	@Override
 	public void execute(Robot robot) {
-		// TODO Auto-generated method stub
-		
+		while (!robot.isDead()) {
+			block.execute(robot);
+		}		
 	}
 
 	@Override

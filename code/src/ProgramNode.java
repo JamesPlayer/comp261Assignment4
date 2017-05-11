@@ -10,8 +10,9 @@ public class ProgramNode extends Node {
 
 	@Override
 	public void execute(Robot robot) {
-		// TODO Auto-generated method stub
-		
+		for (RobotProgramNode node : children) {
+			node.execute(robot);
+		}
 	}
 
 	@Override

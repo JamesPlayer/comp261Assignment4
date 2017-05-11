@@ -8,8 +8,7 @@ public class TurnLNode extends Node {
 
 	@Override
 	public void execute(Robot robot) {
-		// TODO Auto-generated method stub
-		
+		robot.turnLeft();
 	}
 
 	@Override
