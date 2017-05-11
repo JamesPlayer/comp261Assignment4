@@ -107,7 +107,7 @@ public class Parser {
 	 */
 	static RobotProgramNode parseLoop(Scanner s) {
 		require("loop", "Missing 'loop'", s);
-		return parseBlock(s);
+		return new LoopNode(parseBlock(s));
 	}
 	
 	/**
@@ -115,20 +115,28 @@ public class Parser {
 	 */
 	static RobotProgramNode parseBlock(Scanner s) {
 		BlockNode blockNode = new BlockNode();
-		require("{", "Missing '{'", s);
-		while (s.hasNext()) {
+		require("\\{", "Missing '{'", s);
+		while (!s.hasNext("\\}")) {
 			blockNode.children.add(parseStatement(s));
 		}
-		require("}", "Missing '}'", s);
+		require("\\}", "Missing '}'", s);
 		return blockNode;
 	}
 	
 	static RobotProgramNode parseAction(Scanner s) {
-		if (checkFor("move", s)) return new MoveNode();
-		if (checkFor("turnL", s)) return new TurnLNode();
-		if (checkFor("turnR", s)) return new TurnRNode();
-		if (checkFor("takeFuel", s)) return new TakeFuelNode();
-		if (checkFor("wait", s)) return new WaitNode();
+		
+		RobotProgramNode node = null;
+		
+		if (checkFor("move", s)) node = new MoveNode();
+		else if (checkFor("turnL", s)) node = new TurnLNode();
+		else if (checkFor("turnR", s)) node = new TurnRNode();
+		else if (checkFor("takeFuel", s)) node = new TakeFuelNode();
+		else if (checkFor("wait", s)) node = new WaitNode();
+		
+		if (node != null) {
+			require(";", "Missing ';'", s);
+			return node;
+		}
 		
 		fail("Action was not one of move, turnL, turnR, takeFuel, wait", s);
 		return null;
