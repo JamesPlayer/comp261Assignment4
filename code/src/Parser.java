@@ -116,10 +116,13 @@ public class Parser {
 	static RobotProgramNode parseBlock(Scanner s) {
 		BlockNode blockNode = new BlockNode();
 		require("\\{", "Missing '{'", s);
-		while (!s.hasNext("\\}")) {
+		while (s.hasNext() && !s.hasNext("\\}")) {
 			blockNode.children.add(parseStatement(s));
 		}
 		require("\\}", "Missing '}'", s);
+		
+		if (blockNode.children.isEmpty()) fail("Empty Block", s);
+		
 		return blockNode;
 	}
 	
