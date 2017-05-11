@@ -13,7 +13,7 @@ public class TakeFuelNode extends Node {
 
 	@Override
 	public String toString() {
-		return "take fuel;";
+		return "take fuel;\n";
 	}
 
 }

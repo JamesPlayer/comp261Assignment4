@@ -20,10 +20,10 @@ public class BlockNode extends Node {
 		String childString = "";
 		
 		for (RobotProgramNode node : children) {
-			childString += "\n\t" + node.toString();
+			childString += "\t" + node.toString();
 		}
 		
-		return "{" + childString + "\n}";
+		return "{\n" + childString + "}\n";
 	}
 
 }

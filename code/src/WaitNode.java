@@ -13,7 +13,7 @@ public class WaitNode extends Node {
 
 	@Override
 	public String toString() {
-		return "wait;";
+		return "wait;\n";
 	}
 
 }

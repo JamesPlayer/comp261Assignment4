@@ -3,7 +3,7 @@ public class BarrelLRNode extends SensorNode implements RobotProgramNode {
 
 	@Override
 	public int getValue(Robot robot) {
-		return robot.getBarrelFB(0);
+		return robot.getBarrelLR(0);
 	}
 
 	@Override

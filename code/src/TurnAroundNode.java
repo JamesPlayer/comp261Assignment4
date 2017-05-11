@@ -13,7 +13,7 @@ public class TurnAroundNode extends Node {
 
 	@Override
 	public String toString() {
-		return "turn around;";
+		return "turn around;\n";
 	}
 
 }

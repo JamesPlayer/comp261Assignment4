@@ -13,7 +13,7 @@ public class ShieldOnNode extends Node {
 
 	@Override
 	public String toString() {
-		return "shield on;";
+		return "shield on;\n";
 	}
 
 }
