@@ -99,13 +99,15 @@ public class Parser {
 	 */
 	static RobotProgramNode parseStatement(Scanner s) {
 		if (s.hasNext("loop")) return parseLoop(s);
+		else if (s.hasNext("if")) return parseIf(s);
+		else if (s.hasNext("while")) return parseWhile(s);
 		else return parseAction(s);
 	}
 	
 	/**
 	 * LOOP  ::= loop BLOCK 
 	 */
-	static RobotProgramNode parseLoop(Scanner s) {
+	static LoopNode parseLoop(Scanner s) {
 		require("loop", "Missing 'loop'", s);
 		return new LoopNode(parseBlock(s));
 	}
@@ -113,19 +115,23 @@ public class Parser {
 	/**
 	 * BLOCK  ::= { STMT+ }
 	 */
-	static RobotProgramNode parseBlock(Scanner s) {
+	static BlockNode parseBlock(Scanner s) {
 		BlockNode blockNode = new BlockNode();
-		require("\\{", "Missing '{'", s);
+		require("\\{", "Block: Missing '{'", s);
 		while (s.hasNext() && !s.hasNext("\\}")) {
 			blockNode.children.add(parseStatement(s));
 		}
-		require("\\}", "Missing '}'", s);
+		require("\\}", "Block: Missing '}'", s);
 		
 		if (blockNode.children.isEmpty()) fail("Empty Block", s);
 		
 		return blockNode;
 	}
 	
+	/**
+	 * ACT  ::= move | turnL | turnR | turnAround | shieldOn |
+     *    shieldOff | takeFuel | wait
+	 */
 	static RobotProgramNode parseAction(Scanner s) {
 		
 		RobotProgramNode node = null;
@@ -133,6 +139,9 @@ public class Parser {
 		if (checkFor("move", s)) node = new MoveNode();
 		else if (checkFor("turnL", s)) node = new TurnLNode();
 		else if (checkFor("turnR", s)) node = new TurnRNode();
+		else if (checkFor("turnAround", s)) node = new TurnAroundNode();
+		else if (checkFor("shieldOn", s)) node = new ShieldOnNode();
+		else if (checkFor("shieldOff", s)) node = new ShieldOffNode();
 		else if (checkFor("takeFuel", s)) node = new TakeFuelNode();
 		else if (checkFor("wait", s)) node = new WaitNode();
 		
@@ -145,6 +154,126 @@ public class Parser {
 		return null;
 	}
 	
+	/**
+	 * IF  ::= if ( COND ) BLOCK
+	 */
+	static RobotProgramNode parseIf(Scanner s) {
+		require("if", "No 'if'", s);
+		require(OPENPAREN, "Expected (", s);
+		ConditionNode condition = parseCondition(s);
+		require(CLOSEPAREN, "Expected )", s);
+		BlockNode block = parseBlock(s);
+		return new IfNode(condition, block);
+	}
+	
+	/**
+	 * WHILE ::= while ( COND ) BLOCK
+	 */
+	static RobotProgramNode parseWhile(Scanner s) {
+		require("while", "No 'while'", s);
+		require(OPENPAREN, "Expected (", s);
+		ConditionNode condition = parseCondition(s);
+		require(CLOSEPAREN, "Expected )", s);
+		BlockNode block = parseBlock(s);
+		return new WhileNode(condition, block);
+	}
+	
+	/**
+	 * COND  ::= lt ( SEN, NUM )  | gt ( SEN, NUM )  | eq ( SEN, NUM )
+	 */
+	static ConditionNode parseCondition(Scanner s) {
+		if (s.hasNext("lt")) return parseLt(s);
+		else if (s.hasNext("gt")) return parseGt(s);
+		else if (s.hasNext("eq")) return parseEq(s);
+		fail("Operator was not one of 'lt', 'gt', 'eq'", s);
+		return null;
+	}
+	
+	/**
+	 * lt ( SEN, NUM )
+	 */
+	static ConditionNode parseLt(Scanner s) {
+		
+		SensorNode sensorVal = null;
+		NumberNode number = null;
+		
+		require("lt", "Expected lt", s);
+		require(OPENPAREN, "Expected (", s);
+		sensorVal = parseSensor(s);
+		require(",", "Expected ,", s);
+		number = parseNumber(s);
+		
+		require(CLOSEPAREN, "Expected )", s);
+		return new LtNode(sensorVal, number);	
+	}
+	
+	/**
+	 * gt ( SEN, NUM )
+	 */
+	static ConditionNode parseGt(Scanner s) {
+		
+		SensorNode sensorVal = null;
+		NumberNode number = null;
+		
+		require("gt", "Expected gt", s);
+		require(OPENPAREN, "Expected (", s);
+		sensorVal = parseSensor(s);
+		require(",", "Expected ,", s);
+		number = parseNumber(s);
+		
+		require(CLOSEPAREN, "Expected )", s);
+		return new GtNode(sensorVal, number);	
+	}
+	
+	/**
+	 * eq ( SEN, NUM )
+	 */
+	static ConditionNode parseEq(Scanner s) {
+		
+		SensorNode sensorVal = null;
+		NumberNode number = null;
+		
+		require("eq", "Expected eq", s);
+		require(OPENPAREN, "Expected (", s);
+		sensorVal = parseSensor(s);
+		require(",", "Expected ,", s);
+		number = parseNumber(s);
+		
+		require(CLOSEPAREN, "Expected )", s);
+		return new EqNode(sensorVal, number);	
+	}
+	
+	static NumberNode parseNumber(Scanner s) {
+		if (s.hasNext(NUMPAT)) return new NumberNode(Integer.parseInt(s.next(NUMPAT)));
+		fail("Not a number", s);
+		return null;
+	}
+	
+	
+	/**
+	 * SEN   ::= fuelLeft | oppLR | oppFB | numBarrels |
+     *    barrelLR | barrelFB | wallDist
+	 */
+	static SensorNode parseSensor(Scanner s) {
+		
+		SensorNode node = null;
+		
+		if (checkFor("fuelLeft", s)) node = new FuelLeftNode();
+		else if (checkFor("oppLR", s)) node = new OppLRNode();
+		else if (checkFor("oppFB", s)) node = new OppFBNode();
+		else if (checkFor("numBarrels", s)) node = new NumBarrelsNode();
+		else if (checkFor("barrelLR", s)) node = new BarrelLRNode();
+		else if (checkFor("barrelFB", s)) node = new BarrelFBNode();
+		else if (checkFor("wallDist", s)) node = new WallDistNode();
+		
+		if (node != null) {
+			return node;
+		}
+		
+		fail("Sensor was not one of fuelLeft, oppLR, oppFB, numBarrels, barrelLR, barrelFB, wallDist", s);
+		return null;
+		
+	}
 	
 
 	// utility methods for the parser
