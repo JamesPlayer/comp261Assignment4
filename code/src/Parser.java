@@ -180,7 +180,7 @@ public class Parser {
 	}
 	
 	/**
-	 * IF  ::= if ( COND ) BLOCK [ else BLOCK ]
+	 * IF  ::= if ( COND ) BLOCK [elif ( COND ) BLOCK]* [else BLOCK]
 	 */
 	static IfNode parseIf(Scanner s) {
 		require("if", "No 'if'", s);
@@ -188,14 +188,23 @@ public class Parser {
 		ConditionNode condition = parseCondition(s);
 		require(CLOSEPAREN, "Expected )", s);
 		BlockNode block = parseBlock(s);
+		Map<ConditionNode, BlockNode> elifs = new HashMap<ConditionNode, BlockNode>();
+		BlockNode elseBlock = null;
+		
+		// Optional elif statements
+		while (s.hasNext("elif")) {
+			elifs.put(parseCondition(s), parseBlock(s));
+		}
+		
 		
 		// Optional else statement
 		if (s.hasNext("else")) {
 			require("else", "If: No 'else'", s);
-			return new IfNode(condition, block, parseBlock(s));
-		} else {				
-			return new IfNode(condition, block);
-		}	
+			elseBlock = parseBlock(s);
+		}				
+		
+		return new IfNode(condition, block, elifs, elseBlock);
+			
 	}
 	
 	/**
