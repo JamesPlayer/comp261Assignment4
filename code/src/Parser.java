@@ -193,7 +193,14 @@ public class Parser {
 		
 		// Optional elif statements
 		while (s.hasNext("elif")) {
-			elifs.put(parseCondition(s), parseBlock(s));
+			
+			ConditionNode elifCondition = null;
+			
+			require("elif", "If: Expecting 'elif'", s);
+			require(OPENPAREN, "Expected (", s);
+			elifCondition = parseCondition(s);			
+			require(CLOSEPAREN, "Expected )", s);
+			elifs.put(elifCondition, parseBlock(s));
 		}
 		
 		
