@@ -86,6 +86,7 @@ public class Parser {
 	static Pattern NUMERICCONDITIONPAT = Pattern.compile("lt|gt|eq");
 	static Pattern SENSORPAT = Pattern.compile("fuelLeft|oppLR|oppFB|numBarrels|barrelLR|barrelFB|wallDist");
 	static Pattern OPERATORPAT = Pattern.compile("add|sub|mul|div");
+	static Pattern VARPAT = Pattern.compile("\\$[A-Za-z][A-Za-z0-9]*");
 
 	/**
 	 * PROG ::= STMT+
@@ -339,6 +340,28 @@ public class Parser {
 		
 	}
 	
+	/**
+	 * VAR   ::= "\\$[A-Za-z][A-Za-z0-9]*"
+	 */
+	static Node parseVariable(Scanner s) {
+		
+		String varName = "";
+		
+		try {			
+			varName = s.next(VARPAT);
+		} catch (InputMismatchException e) {
+			fail("Condition: Variable has incorrect format", s);
+		}
+		
+		if (s.hasNext("=")) {
+			require("=", "Variable: expecting =", s);
+			ExpressionNode exp = parseExpression(s);
+			require(";", "Variable: expecting ;", s);
+			return new AssignmentNode(varName, exp);
+		} else {			
+			return new VariableNode(varName);
+		}
+	}
 
 	// utility methods for the parser
 
