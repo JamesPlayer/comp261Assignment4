@@ -174,7 +174,7 @@ public class Parser {
 	}
 	
 	/**
-	 * IF  ::= if ( COND ) BLOCK
+	 * IF  ::= if ( COND ) BLOCK [ else BLOCK ]
 	 */
 	static RobotProgramNode parseIf(Scanner s) {
 		require("if", "No 'if'", s);
@@ -182,7 +182,14 @@ public class Parser {
 		ConditionNode condition = parseCondition(s);
 		require(CLOSEPAREN, "Expected )", s);
 		BlockNode block = parseBlock(s);
-		return new IfNode(condition, block);
+		
+		// Optional else statement
+		if (s.hasNext("else")) {
+			require("else", "If: No 'else'", s);
+			return new IfNode(condition, block, parseBlock(s));
+		} else {				
+			return new IfNode(condition, block);
+		}	
 	}
 	
 	/**
