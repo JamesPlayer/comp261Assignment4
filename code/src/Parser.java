@@ -76,7 +76,7 @@ public class Parser {
 
 	// Useful Patterns
 
-	static Pattern NUMPAT = Pattern.compile("-?\\d+"); // ("-?(0|[1-9][0-9]*)");
+	static Pattern NUMPAT = Pattern.compile("-?[1-9][0-9]*|0");
 	static Pattern OPENPAREN = Pattern.compile("\\(");
 	static Pattern CLOSEPAREN = Pattern.compile("\\)");
 	static Pattern OPENBRACE = Pattern.compile("\\{");
@@ -173,7 +173,7 @@ public class Parser {
 			return node;
 		}
 		
-		fail("Action was not one of move, turnL, turnR, takeFuel, wait", s);
+		fail("Action was not one of turnL, turnR, turnAround, shieldOn, shieldOff, takeFuel, wait", s);
 		return null;
 	}
 	
@@ -213,7 +213,14 @@ public class Parser {
           lt ( EXP, EXP )  | gt ( EXP, EXP )  | eq ( EXP, EXP ) 
 	 */
 	static ConditionNode parseCondition(Scanner s) {
-		String operator = s.next(CONDITIONPAT);
+		String operator = null;
+		
+		try {			
+			operator = s.next(CONDITIONPAT);
+		} catch (InputMismatchException e) {
+			fail("Condition: Operator was not one and, or, not, lt, gt, eq", s);
+		}
+		
 		ExpressionNode e1 = null, e2 = null;
 		ConditionNode c1 = null, c2 = null;
 		
@@ -224,19 +231,21 @@ public class Parser {
 		} else if (operator.matches(NUMERICCONDITIONPAT.toString())) {
 			e1 = parseExpression(s);
 		} else {
-			fail("Condition: Expected condition statement", s);
+			fail("Condition: Expected first condition statement", s);
 		}
 		
-		require(",", "Condition: expected ','", s);
-		
-		if (operator.matches(BOOLCONDITIONPAT.toString()) && !operator.equals("not")) {
-			c2 = parseCondition(s);
-		} else if (operator.matches(NUMERICCONDITIONPAT.toString())) {
-			e2 = parseExpression(s);
-		} else {
-			fail("Condition: Expected condition statement", s);
+		if (!operator.equals("not")) {			
+			require(",", "Condition: expected ','", s);
+			
+			if (operator.matches(BOOLCONDITIONPAT.toString())) {
+				c2 = parseCondition(s);
+			} else if (operator.matches(NUMERICCONDITIONPAT.toString())) {
+				e2 = parseExpression(s);
+			} else {
+				fail("Condition: Expected second condition statement", s);
+			}
 		}
-		
+	
 		require(CLOSEPAREN, "Condition: expected ')'", s);
 		
 		switch (operator) {
