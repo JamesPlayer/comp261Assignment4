@@ -327,19 +327,36 @@ public class Parser {
 	
 	
 	/**
-	 * SEN   ::= fuelLeft | oppLR | oppFB | numBarrels |
-     *    barrelLR | barrelFB | wallDist
+	 * SEN   ::= fuelLeft | oppLR | oppFB | numBarrels | barrelLR [( EXP )] | barrelFB [ ( EXP ) ] | wallDist
 	 */
 	static SensorNode parseSensor(Scanner s) {
 		
 		SensorNode node = null;
 		
-		if (checkFor("fuelLeft", s)) node = new FuelLeftNode();
+		if (checkFor("barrelLR", s)) {
+			// Optional argument
+			if (s.hasNext(OPENPAREN)) {
+				require(OPENPAREN, "barrelLR: No (", s);
+				node = new BarrelLRNode(parseExpression(s));
+				require(CLOSEPAREN, "barrelLR: No )", s);
+			} else {				
+				node = new BarrelLRNode(null);
+			}
+		} 
+		else if (checkFor("barrelFB", s)) {
+			// Optional argument
+			if (s.hasNext(OPENPAREN)) {
+				require(OPENPAREN, "barrelFB: No (", s);
+				node = new BarrelFBNode(parseExpression(s));
+				require(CLOSEPAREN, "barrelFB: No )", s);
+			} else {				
+				node = new BarrelFBNode(null);
+			}
+		}
+		else if (checkFor("fuelLeft", s)) node = new FuelLeftNode();
 		else if (checkFor("oppLR", s)) node = new OppLRNode();
 		else if (checkFor("oppFB", s)) node = new OppFBNode();
 		else if (checkFor("numBarrels", s)) node = new NumBarrelsNode();
-		else if (checkFor("barrelLR", s)) node = new BarrelLRNode();
-		else if (checkFor("barrelFB", s)) node = new BarrelFBNode();
 		else if (checkFor("wallDist", s)) node = new WallDistNode();
 		
 		if (node != null) {
