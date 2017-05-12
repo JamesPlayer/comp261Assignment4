@@ -82,6 +82,7 @@ public class Parser {
 	static Pattern OPENBRACE = Pattern.compile("\\{");
 	static Pattern CLOSEBRACE = Pattern.compile("\\}");
 	static Pattern SENSORPAT = Pattern.compile("fuelLeft|oppLR|oppFB|numBarrels|barrelLR|barrelFB|wallDist");
+	static Pattern OPERATORPAT = Pattern.compile("add|sub|mul|div");
 
 	/**
 	 * PROG ::= STMT+
@@ -197,9 +198,9 @@ public class Parser {
 	 */
 	static RobotProgramNode parseWhile(Scanner s) {
 		require("while", "No 'while'", s);
-		require(OPENPAREN, "Expected (", s);
+		require(OPENPAREN, "While: Expected (", s);
 		ConditionNode condition = parseCondition(s);
-		require(CLOSEPAREN, "Expected )", s);
+		require(CLOSEPAREN, "While: Expected )", s);
 		BlockNode block = parseBlock(s);
 		return new WhileNode(condition, block);
 	}
@@ -212,6 +213,33 @@ public class Parser {
 		else if (s.hasNext("gt")) return parseGt(s);
 		else if (s.hasNext("eq")) return parseEq(s);
 		fail("Operator was not one of 'lt', 'gt', 'eq'", s);
+		return null;
+	}
+	
+	/**
+	 * OP    ::= add | sub | mul | div
+	 */
+	static OperatorNode parseOperator(Scanner s) {
+		String operator = s.next(OPERATORPAT);
+		require(OPENPAREN, "Operator: expected '('", s);
+		ExpressionNode e1 = parseExpression(s);
+		require(",", "Operator: exptected ','", s);
+		ExpressionNode e2 = parseExpression(s);
+		require(CLOSEPAREN, "Operator: expected ')'", s);
+		
+		switch (operator) {
+			case "add":
+				return new AddNode(e1, e2);
+			case "sub":
+				return new SubNode(e1, e2);
+			case "mul":
+				return new MulNode(e1, e2);
+			case "div":
+				return new DivNode(e1, e2);
+			default:
+				fail("Expected one of add, sub, mul, div", s);
+		}
+		
 		return null;
 	}
 	
@@ -281,8 +309,9 @@ public class Parser {
 	static ExpressionNode parseExpression(Scanner s) {
 		if (s.hasNext(NUMPAT)) return parseNumber(s);
 		if (s.hasNext(SENSORPAT)) return parseSensor(s);
+		if (s.hasNext(OPERATORPAT)) return parseOperator(s);
 		
-		fail("Expression is not a number or sensor", s);
+		fail("Expression is not a number, sensor or operator", s);
 		return null;
 	}
 	
