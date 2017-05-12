@@ -1,5 +1,5 @@
 
-public class EqNode extends ConditionNode implements RobotProgramNode {
+public class EqNode extends NumericConditionNode implements RobotProgramNode {
 
 	public EqNode(ExpressionNode e1, ExpressionNode e2) {
 		super(e1, e2);

@@ -81,7 +81,9 @@ public class Parser {
 	static Pattern CLOSEPAREN = Pattern.compile("\\)");
 	static Pattern OPENBRACE = Pattern.compile("\\{");
 	static Pattern CLOSEBRACE = Pattern.compile("\\}");
-	static Pattern CONDITIONPAT = Pattern.compile("lt|gt|eq");
+	static Pattern CONDITIONPAT = Pattern.compile("and|or|not|lt|gt|eq");
+	static Pattern BOOLCONDITIONPAT = Pattern.compile("and|or|not");
+	static Pattern NUMERICCONDITIONPAT = Pattern.compile("lt|gt|eq");
 	static Pattern SENSORPAT = Pattern.compile("fuelLeft|oppLR|oppFB|numBarrels|barrelLR|barrelFB|wallDist");
 	static Pattern OPERATORPAT = Pattern.compile("add|sub|mul|div");
 
@@ -178,7 +180,7 @@ public class Parser {
 	/**
 	 * IF  ::= if ( COND ) BLOCK [ else BLOCK ]
 	 */
-	static RobotProgramNode parseIf(Scanner s) {
+	static IfNode parseIf(Scanner s) {
 		require("if", "No 'if'", s);
 		require(OPENPAREN, "Expected (", s);
 		ConditionNode condition = parseCondition(s);
@@ -197,7 +199,7 @@ public class Parser {
 	/**
 	 * WHILE ::= while ( COND ) BLOCK
 	 */
-	static RobotProgramNode parseWhile(Scanner s) {
+	static WhileNode parseWhile(Scanner s) {
 		require("while", "No 'while'", s);
 		require(OPENPAREN, "While: Expected (", s);
 		ConditionNode condition = parseCondition(s);
@@ -207,17 +209,43 @@ public class Parser {
 	}
 	
 	/**
-	 * COND  ::= lt ( SEN, NUM )  | gt ( SEN, NUM )  | eq ( SEN, NUM )
+	 * COND  ::= and ( COND, COND ) | or ( COND, COND ) | not ( COND )  | 
+          lt ( EXP, EXP )  | gt ( EXP, EXP )  | eq ( EXP, EXP ) 
 	 */
 	static ConditionNode parseCondition(Scanner s) {
 		String operator = s.next(CONDITIONPAT);
+		ExpressionNode e1 = null, e2 = null;
+		ConditionNode c1 = null, c2 = null;
+		
 		require(OPENPAREN, "Condition: expected '('", s);
-		ExpressionNode e1 = parseExpression(s);
-		require(",", "Condition: exptected ','", s);
-		ExpressionNode e2 = parseExpression(s);
+		
+		if (operator.matches(BOOLCONDITIONPAT.toString())) {
+			c1 = parseCondition(s);
+		} else if (operator.matches(NUMERICCONDITIONPAT.toString())) {
+			e1 = parseExpression(s);
+		} else {
+			fail("Condition: Expected condition statement", s);
+		}
+		
+		require(",", "Condition: expected ','", s);
+		
+		if (operator.matches(BOOLCONDITIONPAT.toString()) && !operator.equals("not")) {
+			c2 = parseCondition(s);
+		} else if (operator.matches(NUMERICCONDITIONPAT.toString())) {
+			e2 = parseExpression(s);
+		} else {
+			fail("Condition: Expected condition statement", s);
+		}
+		
 		require(CLOSEPAREN, "Condition: expected ')'", s);
 		
 		switch (operator) {
+			case "and":
+				return new AndNode(c1, c2);
+			case "or":
+				return new OrNode(c1, c2);
+			case "not":
+				return new NotNode(c1);
 			case "lt":
 				return new LtNode(e1, e2);
 			case "gt":
@@ -256,60 +284,6 @@ public class Parser {
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * lt ( SEN, NUM )
-	 */
-	static ConditionNode parseLt(Scanner s) {
-		
-		SensorNode sensorVal = null;
-		NumberNode number = null;
-		
-		require("lt", "Expected lt", s);
-		require(OPENPAREN, "Expected (", s);
-		sensorVal = parseSensor(s);
-		require(",", "Expected ,", s);
-		number = parseNumber(s);
-		
-		require(CLOSEPAREN, "Expected )", s);
-		return new LtNode(sensorVal, number);	
-	}
-	
-	/**
-	 * gt ( SEN, NUM )
-	 */
-	static ConditionNode parseGt(Scanner s) {
-		
-		SensorNode sensorVal = null;
-		NumberNode number = null;
-		
-		require("gt", "Expected gt", s);
-		require(OPENPAREN, "Expected (", s);
-		sensorVal = parseSensor(s);
-		require(",", "Expected ,", s);
-		number = parseNumber(s);
-		
-		require(CLOSEPAREN, "Expected )", s);
-		return new GtNode(sensorVal, number);	
-	}
-	
-	/**
-	 * eq ( SEN, NUM )
-	 */
-	static ConditionNode parseEq(Scanner s) {
-		
-		SensorNode sensorVal = null;
-		NumberNode number = null;
-		
-		require("eq", "Expected eq", s);
-		require(OPENPAREN, "Expected (", s);
-		sensorVal = parseSensor(s);
-		require(",", "Expected ,", s);
-		number = parseNumber(s);
-		
-		require(CLOSEPAREN, "Expected )", s);
-		return new EqNode(sensorVal, number);	
 	}
 	
 	static NumberNode parseNumber(Scanner s) {

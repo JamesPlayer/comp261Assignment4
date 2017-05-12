@@ -1,5 +1,5 @@
 
-public class GtNode extends ConditionNode implements RobotProgramNode {
+public class GtNode extends NumericConditionNode implements RobotProgramNode {
 
 	public GtNode(ExpressionNode e1, ExpressionNode e2) {
 		super(e1, e2);
