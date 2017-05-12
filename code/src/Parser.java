@@ -101,12 +101,13 @@ public class Parser {
 	}
 	
 	/**
-	 * STMT  ::= ACT ; | LOOP 
+	 * STMT  ::= ACT ; | LOOP | IF | WHILE | ASSGN ;
 	 */
 	static RobotProgramNode parseStatement(Scanner s) {
 		if (s.hasNext("loop")) return parseLoop(s);
 		else if (s.hasNext("if")) return parseIf(s);
 		else if (s.hasNext("while")) return parseWhile(s);
+		else if (s.hasNext(VARPAT)) return parseAssignment(s);
 		else return parseAction(s);
 	}
 	
@@ -303,14 +304,15 @@ public class Parser {
 	}
 	
 	/**
-	 * EXP  ::= NUM | SEN | OP ( EXP, EXP )
+	 * EXP   ::= NUM | SEN | VAR | OP ( EXP, EXP )
 	 */
 	static ExpressionNode parseExpression(Scanner s) {
 		if (s.hasNext(NUMPAT)) return parseNumber(s);
+		if (s.hasNext(VARPAT)) return parseVariable(s);
 		if (s.hasNext(SENSORPAT)) return parseSensor(s);
 		if (s.hasNext(OPERATORPAT)) return parseOperator(s);
 		
-		fail("Expression is not a number, sensor or operator", s);
+		fail("Expression is not a number, sensor, variable or operator", s);
 		return null;
 	}
 	
@@ -343,7 +345,7 @@ public class Parser {
 	/**
 	 * VAR   ::= "\\$[A-Za-z][A-Za-z0-9]*"
 	 */
-	static Node parseVariable(Scanner s) {
+	static VariableNode parseVariable(Scanner s) {
 		
 		String varName = "";
 		
@@ -352,15 +354,19 @@ public class Parser {
 		} catch (InputMismatchException e) {
 			fail("Condition: Variable has incorrect format", s);
 		}
-		
-		if (s.hasNext("=")) {
-			require("=", "Variable: expecting =", s);
-			ExpressionNode exp = parseExpression(s);
-			require(";", "Variable: expecting ;", s);
-			return new AssignmentNode(varName, exp);
-		} else {			
-			return new VariableNode(varName);
-		}
+					
+		return new VariableNode(varName);
+	}
+	
+	/**
+	 * ASSGN ::= VAR = EXP
+	 */
+	static AssignmentNode parseAssignment(Scanner s) {
+		VariableNode varNode = parseVariable(s);
+		require("=", "Assignment: expecting =", s);
+		ExpressionNode exp = parseExpression(s);
+		require(";", "Assignment: expecting ;", s);
+		return new AssignmentNode(varNode, exp);
 	}
 
 	// utility methods for the parser

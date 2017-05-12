@@ -1,22 +1,22 @@
 
 public class AssignmentNode extends Node {
 	
-	public String varName = null;
+	public VariableNode varNode = null;
 	public ExpressionNode exp = null;
 
-	public AssignmentNode(String varName, ExpressionNode exp) {
-		this.varName = varName;
+	public AssignmentNode(VariableNode varNode, ExpressionNode exp) {
+		this.varNode = varNode;
 		this.exp = exp;
 	}
 
 	@Override
 	public void execute(Robot robot) {
-		VariableNode.vars.put(varName, exp.getValue(robot));
+		VariableNode.vars.put(varNode.toString(), exp.getValue(robot));
 	}
 
 	@Override
 	public String toString() {
-		return varName + " = " + exp;
+		return varNode + " = " + exp;
 	}
 
 }
