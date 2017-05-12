@@ -81,6 +81,7 @@ public class Parser {
 	static Pattern CLOSEPAREN = Pattern.compile("\\)");
 	static Pattern OPENBRACE = Pattern.compile("\\{");
 	static Pattern CLOSEBRACE = Pattern.compile("\\}");
+	static Pattern CONDITIONPAT = Pattern.compile("lt|gt|eq");
 	static Pattern SENSORPAT = Pattern.compile("fuelLeft|oppLR|oppFB|numBarrels|barrelLR|barrelFB|wallDist");
 	static Pattern OPERATORPAT = Pattern.compile("add|sub|mul|div");
 
@@ -209,15 +210,29 @@ public class Parser {
 	 * COND  ::= lt ( SEN, NUM )  | gt ( SEN, NUM )  | eq ( SEN, NUM )
 	 */
 	static ConditionNode parseCondition(Scanner s) {
-		if (s.hasNext("lt")) return parseLt(s);
-		else if (s.hasNext("gt")) return parseGt(s);
-		else if (s.hasNext("eq")) return parseEq(s);
-		fail("Operator was not one of 'lt', 'gt', 'eq'", s);
+		String operator = s.next(CONDITIONPAT);
+		require(OPENPAREN, "Condition: expected '('", s);
+		ExpressionNode e1 = parseExpression(s);
+		require(",", "Condition: exptected ','", s);
+		ExpressionNode e2 = parseExpression(s);
+		require(CLOSEPAREN, "Condition: expected ')'", s);
+		
+		switch (operator) {
+			case "lt":
+				return new LtNode(e1, e2);
+			case "gt":
+				return new GtNode(e1, e2);
+			case "eq":
+				return new EqNode(e1, e2);
+			default:
+				fail("Expected one of add, sub, mul, div", s);
+		}
+		
 		return null;
 	}
 	
 	/**
-	 * OP    ::= add | sub | mul | div
+	 * OP    ::= add (EXP, EXP) | sub (EXP, EXP) | mul (EXP, EXP) | div (EXP, EXP)
 	 */
 	static OperatorNode parseOperator(Scanner s) {
 		String operator = s.next(OPERATORPAT);

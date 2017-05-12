@@ -27,7 +27,7 @@ public class WaitNode extends Node {
 	@Override
 	public String toString() {
 		String suffix = (expressionNode != null) ? "(" + expressionNode + ")" : "";
-		return "Wait" + suffix + ";";
+		return "wait" + suffix + ";";
 	}
 
 }

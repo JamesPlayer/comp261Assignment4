@@ -14,7 +14,7 @@ public class TurnLNode extends Node {
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return "turn left;\n";
+		return "turn left;";
 	}
 
 }

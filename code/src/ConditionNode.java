@@ -1,16 +1,12 @@
 
 public abstract class ConditionNode extends Node {
 	
-	SensorNode sensorNode = null;
-	NumberNode numberNode = null;
+	ExpressionNode e1 = null;
+	ExpressionNode e2 = null;
 	
-	public ConditionNode(SensorNode sensorNode, NumberNode numberNode) {
-		this.sensorNode = sensorNode;
-		this.numberNode = numberNode;
-	}
-
-	public ConditionNode() {
-		// TODO Auto-generated constructor stub
+	public ConditionNode(ExpressionNode e1, ExpressionNode e2) {
+		this.e1 = e1;
+		this.e2 = e2;
 	}
 	
 	public void execute(Robot robot) {
