@@ -16,7 +16,7 @@ public class AssignmentNode extends Node {
 
 	@Override
 	public String toString() {
-		return varNode + " = " + exp;
+		return varNode + " = " + exp + ";";
 	}
 
 }

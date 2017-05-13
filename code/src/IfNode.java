@@ -39,6 +39,7 @@ public class IfNode extends Node implements RobotProgramNode {
 	public void execute(Robot robot) {
 		if (condition.evaluate(robot)) {
 			block.execute(robot);
+			return;
 		} else if (!elifs.isEmpty()) {
 			
 			// Loop through all elifs, if we find a condition that is true then execute

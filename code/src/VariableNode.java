@@ -12,7 +12,11 @@ public class VariableNode extends ExpressionNode {
 
 	@Override
 	public int getValue(Robot robot) {
-		return vars.get(varName);
+		try {			
+			return vars.get(varName);
+		} catch (NullPointerException e) {
+			return 0;
+		}
 	}
 
 	@Override
